@@ -1,6 +1,26 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
 include "../config/database.php";
+
+
+$role = $_SESSION['user_role'] ?? '';
+$user_id = $_SESSION['user_id'] ?? '';
+
+
+if(isset($_SESSION['user_id'])){
+    
+    if($_SESSION['user_role'] == "Admin"){
+        header("Location: ../profile/admin/dashboard.php");
+        exit();
+    }
+
+    elseif($_SESSION['user_role'] == "Student"){
+        header("Location: ../profile/student/dashboard.php");
+        exit();
+    }
+}
 
 $error = "";
 

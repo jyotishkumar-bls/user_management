@@ -2,63 +2,74 @@
 session_start();
 include "../config/database.php";
 
+
+
 $error = "";
-$success = "";
-
-
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
-    $role = $name = $email = $password = $confirm_password = "";
 
-    if(empty($_POST['role'])){
+    $role = $_POST['role'] ?? '';
+    $name = $_POST['name'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    if(empty($role)){
         $error = "Role is required!";
-    } else {
-        $role = $_POST['role'];
-    }
-
-    if(empty($_POST['name']) && empty($error)){
+    } elseif(empty($name)){
         $error = "Name is required!";
-    } elseif(empty($error)) {
-        $name = $_POST['name'];
-    }
-
-    if(empty($_POST['email']) && empty($error)){
+    } elseif(empty($email)){
         $error = "Email is required!";
-    } elseif(empty($error)) {
-        $email = $_POST['email'];
-    }
-
-    if(empty($_POST['password']) && empty($error)){
+    } elseif(empty($password)){
         $error = "Password is required!";
-    } elseif(empty($error)) {
-        $password = $_POST['password'];
-    }
-
-    if(empty($_POST['confirm_password']) && empty($error)){
+    } elseif(empty($confirm_password)){
         $error = "Confirm password is required!";
-    } elseif(empty($error)) {
-        $confirm_password = $_POST['confirm_password'];
-    }
-
-    if(empty($error) && $password != $confirm_password){
+    } elseif($password != $confirm_password){
         $error = "Passwords do not match!";
     }
 
     if(empty($error)){
+
         $check_email = "SELECT * FROM users WHERE email = '$email'";
         $result = mysqli_query($conn, $check_email);
 
         if($result && mysqli_num_rows($result) > 0){
             $error = "Email already registered!";
         } else {
+
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (role, name, email, password) VALUES ('$role', '$name', '$email', '$hashed_password')";
-            
+
+            $sql = "INSERT INTO users (role, name, email, password) 
+                    VALUES ('$role', '$name', '$email', '$hashed_password')";
+
             if(mysqli_query($conn, $sql)){
-                header("Location: login.php?success=account_created");
-                exit;
+
+                $user_id = mysqli_insert_id($conn);
+
+                if($role == "Admin"){
+
+                    $admin_sql = "INSERT INTO admins (
+                                    user_id,
+                                    fullname,
+                                    email
+                                  ) VALUES (
+                                    '$user_id',
+                                    '$name',
+                                    '$email'
+                                  )";
+
+                    if(!mysqli_query($conn, $admin_sql)){
+                        $error = "Admin Insert Error: " . mysqli_error($conn);
+                    }
+                }
+
+                if(empty($error)){
+                    header("Location: login.php?success=account_created");
+                    exit;
+                }
+
             } else {
-                $error = "Database Error: " . mysqli_error($conn);
+                $error = "User Insert Error: " . mysqli_error($conn);
             }
         }
     }
@@ -142,7 +153,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     &nbsp;&nbsp;
                     <input type="radio" name="role" value="Staff" class="mr-1" required> Staff
                     &nbsp;&nbsp;
-                    <input type="radio" name="role" value="Admin" class="mr-1" required> Staff
+                    <input type="radio" name="role" value="Admin" class="mr-1" required> Admin
                     &nbsp;&nbsp;
                 </div>
 

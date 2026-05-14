@@ -1,6 +1,29 @@
 <?php
 session_start();
-include "../config/database.php";
+include "../../config/database.php";
+
+$user_id = $_SESSION['user_id'] ?? '';
+
+
+if(!$user_id){
+    header("Location: ../../users/login.php");
+    exit();
+}
+
+$sql = "SELECT * FROM admins WHERE user_id = $user_id";
+
+$result = mysqli_query($conn, $sql);
+$row = mysqli_fetch_assoc($result);
+
+if(empty($row)){
+    die("Admin details not found!");
+}else{
+    
+}
+
+$profile_image = !empty($row['profile_image'])
+    ? "../../uploads/" . $row['profile_image']
+    : "../../uploads/default.png";
 ?>
 
 <!DOCTYPE html>
@@ -10,10 +33,8 @@ include "../config/database.php";
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
 
-    <!-- Bootstrap 4 CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <style>
@@ -44,6 +65,11 @@ include "../config/database.php";
 
         .profile-card {
             border-radius: 20px;
+            padding: 30px;
+        }
+
+        img {
+            object-fit: cover;
         }
     </style>
 </head>
@@ -52,7 +78,6 @@ include "../config/database.php";
 
 <div class="d-flex">
 
-    <!-- Sidebar -->
     <div class="sidebar text-white p-3">
 
         <div class="d-flex align-items-center mb-4">
@@ -65,7 +90,7 @@ include "../config/database.php";
         <ul class="nav flex-column mt-3">
 
             <li class="nav-item mb-2">
-                <a href="#" class="nav-link active-menu text-white">
+                <a href="dashboard.php" class="nav-link active-menu text-white">
                     <i class="bi bi-house-fill mr-2"></i> Dashboard
                 </a>
             </li>
@@ -82,20 +107,16 @@ include "../config/database.php";
                 </a>
             </li>
 
-          
-
-            
-
             <hr class="bg-secondary">
 
             <li class="nav-item mb-2">
-                <a href="#" class="nav-link text-white">
+                <a href="profile.php" class="nav-link text-white">
                     <i class="bi bi-person mr-2"></i> Profile
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="logout.php" class="nav-link text-white">
+               <a href="../../users/logout.php" class="nav-link text-white">
                     <i class="bi bi-box-arrow-right mr-2"></i> Logout
                 </a>
             </li>
@@ -103,10 +124,8 @@ include "../config/database.php";
         </ul>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content flex-grow-1 p-4">
 
-        <!-- Topbar -->
         <div class="bg-white shadow-sm rounded p-3 d-flex justify-content-between align-items-center">
 
             <div class="d-flex align-items-center">
@@ -124,10 +143,23 @@ include "../config/database.php";
                 </div>
 
                 <div class="d-flex align-items-center">
-                    <img src="jyotish.png" class="rounded-circle" width="50" height="50">
+                  
+
+                    <a href="profile.php">
+
+                        <img src="<?php echo $profile_image; ?>"
+                            class="rounded-circle"
+                            width="50"
+                            height="50"
+                            style="object-fit: cover; cursor: pointer;">
+
+                    </a>
+                       
 
                     <div class="ml-2">
-                        <h6 class="mb-0 font-weight-bold">Admin</h6>
+                        <h6 class="mb-0 font-weight-bold">
+                            <?php echo $row['fullname']; ?>
+                        </h6>
                         <small class="text-muted">Super Admin</small>
                     </div>
                 </div>
@@ -135,18 +167,16 @@ include "../config/database.php";
             </div>
         </div>
 
-        <!-- Dashboard Row -->
         <div class="row mt-4">
 
-            <!-- Left Section -->
             <div class="col-md-8">
 
                 <div class="bg-primary text-white p-5 rounded">
-                    <h2>Welcome Back Admin 👋</h2>
+                    <h2>Welcome Back <?php echo $row['name']; ?> 👋</h2>
                     <p class="mb-0">Manage student details easily from dashboard.</p>
                 </div>
 
-                <div class="row mt-4">
+                <div class="row mt-5">
 
                     <div class="col-md-4 mb-3">
                         <div class="card p-4 shadow-sm border-0">
@@ -172,30 +202,36 @@ include "../config/database.php";
                 </div>
             </div>
 
-            <!-- Right Section -->
             <div class="col-md-4">
 
-                <div class="card border-0 shadow-sm profile-card  text-center">
+                <div class="card border-0 shadow-sm profile-card text-center">
 
                     <h5 class="text-primary font-weight-bold mb-4">Admin Profile</h5>
 
-                    <img src="jyotish.png"
-                         class="rounded-circle mx-auto d-block mb-3"
-                         width="120"
-                         height="">
+                      <a href="profile.php">
 
-                    <h4 class="font-weight-bold">Admin</h4>
+                        <img src="<?php echo $profile_image; ?>"
+                            class="rounded-circle"
+                            width="200"
+                            height="200"
+                            style="object-fit: cover; cursor: pointer;">
+
+                        </a>
+
+                    <h4 class="font-weight-bold">
+                        <?php echo $row['name']; ?>
+                    </h4>
 
                     <p class="text-primary">Super Admin</p>
 
                     <p class="text-muted mb-2">
                         <i class="bi bi-envelope mr-2"></i>
-                        admin@gmail.com
+                        <?php echo $row['email']; ?>
                     </p>
 
                     <p class="text-muted">
-                        <i class="bi bi-calendar mr-2"></i>
-                        Joined on 01 Jan 2024
+                        <i class="bi bi-phone mr-2"></i>
+                        <?php echo $row['mobile']; ?>
                     </p>
 
                 </div>
@@ -203,50 +239,6 @@ include "../config/database.php";
             </div>
 
         </div>
-
-        <!-- Table Section -->
-        <!-- <div class="card mt-4 border-0 shadow-sm">
-
-            <div class="card-body">
-
-                <div class="d-flex justify-content-between mb-3">
-                    <h4>Student Details</h4>
-                    <button class="btn btn-primary">Add Student</button>
-                </div>
-
-                <table class="table table-hover">
-
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>Rahul</td>
-                            <td>rahul@gmail.com</td>
-                            <td>
-                                <span class="badge badge-success">Active</span>
-                            </td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-info">View</a>
-                                <a href="#" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="#" class="btn btn-sm btn-danger">Delete</a>
-                            </td>
-                        </tr>
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </div> -->
 
     </div>
 

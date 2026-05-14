@@ -1,6 +1,15 @@
 <?php
+
 session_start();
 include "../../config/database.php";
+
+$role = $_SESSION['user_role'] ?? '';
+$user_id = $_SESSION['user_id'] ?? '';
+
+if(!$user_id){
+    header("Location: ../../users/login.php");
+    
+}
 
 $sql = "SELECT * FROM students ORDER BY id DESC";
 $result = mysqli_query($conn, $sql);
@@ -81,7 +90,7 @@ $result = mysqli_query($conn, $sql);
             </li>
 
             <li>
-                <a href="show_students.php" class="nav-link active-menu">
+                <a href="show_student.php" class="nav-link active-menu">
                     <i class="bi bi-table me-2"></i> Show Students
                 </a>
             </li>
@@ -97,13 +106,13 @@ $result = mysqli_query($conn, $sql);
             <hr>
 
             <li>
-                <a href="#" class="nav-link">
+                <a href="profile.php" class="nav-link">
                     <i class="bi bi-person me-2"></i> Profile
                 </a>
             </li>
 
             <li>
-                <a href="#" class="nav-link">
+                <a href="logout.php" class="nav-link">
                     <i class="bi bi-box-arrow-right me-2"></i> Logout
                 </a>
             </li>
@@ -157,6 +166,9 @@ $result = mysqli_query($conn, $sql);
                                 <th>Mobile</th>
                                 <th>Course</th>
                                 <th>Batch</th>
+                                <th>status</th>
+                                <th>created_by</th>
+                                <th>updated_by</th>
                                
                                 <th>Actions</th>
                             </tr>
@@ -174,9 +186,15 @@ $result = mysqli_query($conn, $sql);
                             <tr>
                                 <td><?php echo $i++; ?></td>
 
-                                <td>
-                                    <img src="profile.jpg" class="student-img">
-                                </td>
+                                
+                                    <td>
+                                        <img src="../../uploads/<?php echo $row['profile_image']; ?>" 
+                                            width="50"
+                                            height="50"
+                                            class="rounded-circle"
+                                            style="object-fit: cover;">
+                                    </td>
+                                
 
                                 <td><?php echo $row['name']; ?></td>
 
@@ -187,6 +205,12 @@ $result = mysqli_query($conn, $sql);
                                 <td><?php echo $row['course']; ?></td>
 
                                 <td><?php echo $row['batch_name']; ?></td>
+
+                                <td><?php echo $row['status']; ?></td>
+
+                                <td><?php echo $row['created_by']; ?></td>
+
+                                <td><?php echo $row['updated_by']; ?></td>
 
                                 
 

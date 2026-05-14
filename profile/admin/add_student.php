@@ -1,10 +1,24 @@
-
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
+
 include "../../config/database.php";
 
-$nameErr = $emailErr = $mobileErr = $courseErr = $batchErr = "";
+$role = $_SESSION['user_role'] ?? '';
+$user_id = $_SESSION['user_id'] ?? '';
+
+
+
+
+if(!$user_id){
+    header("Location: ../../users/login.php");
+    exit();
+}
+
+$nameErr = $emailErr = $mobileErr = $courseErr = $batchErr = $imageErr = "";
 $name = $email = $mobile = $dob = $gender = $address = $course = $batch_name = "";
+$profile_image = "";
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
 
@@ -43,53 +57,87 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     } else {
         $course = trim($_POST['course']);
 
-        if(!preg_match("/^[a-zA-Z ]+$/", $course)){
+        if(!preg_match("/^[a-zA-Z. ]+$/", $course)){
             $courseErr = "Only alphabets allowed in course!";
         }
     }
 
     if(empty($_POST['batch_name'])){
-        $batchErr = "Batch name is required!";
+        $batchErr = "Batch year is required!";
     } else {
         $batch_name = trim($_POST['batch_name']);
 
-        if(!preg_match("/^[a-zA-Z0-9 ]+$/", $batch_name)){
-            $batchErr = "Invalid batch name!";
+        if(!preg_match("/^[0-9]{4}$/", $batch_name)){
+            $batchErr = "Invalid batch year!";
         }
     }
 
-    $dob = $_POST['dob'];
-    $gender = $_POST['gender'];
-    $address = $_POST['address'];
+    $dob = $_POST['dob'] ?? '';
+    $gender = $_POST['gender'] ?? '';
+    $address = $_POST['address'] ?? '';
+
+    // Profile Image Upload
+    if(!empty($_FILES['profile_image']['name'])){
+
+        $target_dir = "../../uploads/";
+
+        if(!is_dir($target_dir)){
+            mkdir($target_dir, 0777, true);
+        }
+
+        $image_name = time() . "_" . basename($_FILES["profile_image"]["name"]);
+        $target_file = $target_dir . $image_name;
+
+        $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+        $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+
+        $check = getimagesize($_FILES["profile_image"]["tmp_name"]);
+
+        if($check === false){
+            $imageErr = "File is not an image!";
+        } elseif(!in_array($imageFileType, $allowed_types)){
+            $imageErr = "Only JPG, JPEG, PNG & GIF files are allowed!";
+        } elseif($_FILES["profile_image"]["size"] > 2000000){
+            $imageErr = "Image size should be less than 2MB!";
+        } else {
+            if(move_uploaded_file($_FILES["profile_image"]["tmp_name"], $target_file)){
+                $profile_image = $image_name;
+            } else {
+                $imageErr = "Image upload failed!";
+            }
+        }
+    }
 
     if(
         empty($nameErr) &&
         empty($emailErr) &&
         empty($mobileErr) &&
         empty($courseErr) &&
-        empty($batchErr)
+        empty($batchErr) &&
+        empty($imageErr)
     ){
-
-
-
         $sql = "INSERT INTO students 
-        (name, email, mobile, gender, dob, course, batch_name, address) 
-        VALUES 
-        ('$name', '$email', '$mobile', '$gender', '$dob', '$course', '$batch_name', '$address')";
+            (name, email, mobile, gender, dob, course, batch_name, address, profile_image, created_by) 
+            VALUES 
+            ('$name', '$email', '$mobile', '$gender', '$dob', '$course', '$batch_name', '$address', '$profile_image', '$user_id')";
 
+        
         $result = mysqli_query($conn, $sql);
 
         if($result){
-            
-            header("Location: ../../profile/admin/show_student.php");
-            
-        } else {
-            echo "Data not inserted: " . mysqli_error($conn);
-        }
+            header("Location: show_student.php");
+                exit();
+                
+            } else {
+                echo "Data not inserted: " . mysqli_error($conn);
+            }
+      
     }
+            
+        
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -102,32 +150,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <title>Add Student</title>
 
     <style>
-    body {
-        background: #f4f7fb;
-    }
+        body {
+            background: #f4f7fb;
+        }
 
-    .sidebar {
-        width: 260px;
-        min-height: 100vh;
-        background: #0f172a;
-    }
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: #0f172a;
+        }
 
-    .sidebar .nav-link {
-        color: white;
-        padding: 12px;
-        border-radius: 8px;
-        margin-bottom: 8px;
-    }
+        .sidebar .nav-link {
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
 
-    .sidebar .nav-link:hover,
-    .active-menu {
-        background: #2563eb;
-    }
+        .sidebar .nav-link:hover,
+        .active-menu {
+            background: #2563eb;
+        }
 
-    .main-content {
-        width: calc(100% - 260px);
-    }
-</style>
+        .main-content {
+            width: calc(100% - 260px);
+        }
+    </style>
 
 
     <!-- Bootstrap CSS -->
@@ -136,6 +184,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+</head>
 <body class="bg-light">
 
 <div class="d-flex">
@@ -177,13 +227,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             <hr>
 
             <li>
-                <a href="#" class="nav-link">
+                <a href="profile.php" class="nav-link">
                     <i class="bi bi-person me-2"></i> Profile
                 </a>
             </li>
 
             <li>
-                <a href="#" class="nav-link">
+                <a href="logout.php" class="nav-link">
                     <i class="bi bi-box-arrow-right me-2"></i> Logout
                 </a>
             </li>
@@ -274,17 +324,31 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                     </div>
 
-                    <div class="row">
+                   <div class="row">
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Course</label>
-                            <input type="text" name="course" class="form-control" placeholder="Enter course" required>
+                            <select name="course" class="form-select" required>
+                                <option value="">-- Select Course --</option>
+                                <option value="BCA">BCA</option>
+                                <option value="MCA">MCA</option>
+                                <option value="B.Tech">B.Tech</option>
+                                <option value="MBA">MBA</option>
+                                <option value="B.Sc">B.Sc</option>
+                            </select>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Batch Name</label>
-                            <input type="text" name="batch_name" class="form-control" placeholder="Enter batch name" required>
+                            <label class="form-label">Batch Year</label>
+                            <select name="batch_name" class="form-select" required>
+                                <option value="">-- Select Year --</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
                         </div>
+                    
 
                     </div>
 
