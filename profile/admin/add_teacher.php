@@ -7,6 +7,7 @@ include "../../config/database.php";
 
 $role = $_SESSION['user_role'] ?? '';
 $user_id = $_SESSION['user_id'] ?? '';
+$user_name = $_SESSION['user_name'] ?? '';
 
 
 
@@ -16,8 +17,8 @@ if(!$user_id){
     exit();
 }
 
-$nameErr = $emailErr = $mobileErr = $courseErr = $batchErr = $imageErr = "";
-$name = $email = $mobile = $dob = $gender = $address = $course = $batch_name = "";
+$nameErr = $emailErr = $mobileErr = $qualificationErr = $subjectErr = $imageErr = "";
+$name = $email = $mobile = $dob = $gender = $address = $qualification = $subject = "";
 $profile_image = "";
 
 if($_SERVER["REQUEST_METHOD"] == "POST"){
@@ -52,24 +53,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         }
     }
 
-    if(empty($_POST['course'])){
-        $courseErr = "Course is required!";
+    if(empty($_POST['qualification'])){
+        $qualificationErr = "Qualification is required!";
     } else {
-        $course = trim($_POST['course']);
+        $qualification = trim($_POST['qualification']);
 
-        if(!preg_match("/^[a-zA-Z. ]+$/", $course)){
-            $courseErr = "Only alphabets allowed in course!";
+        if(!preg_match("/^[a-zA-Z. ]+$/", $qualification)){
+            $qualificationErr = "Only alphabets and periods allowed in qualification!";
         }
     }
 
-    if(empty($_POST['batch_name'])){
-        $batchErr = "Batch year is required!";
+    if(empty($_POST['subject'])){
+        $subjectErr = "Subject is required!";
     } else {
-        $batch_name = trim($_POST['batch_name']);
-
-        if(!preg_match("/^[0-9]{4}$/", $batch_name)){
-            $batchErr = "Invalid batch year!";
-        }
+        $subject = trim($_POST['subject']);
     }
 
     $dob = $_POST['dob'] ?? '';
@@ -113,20 +110,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         empty($nameErr) &&
         empty($emailErr) &&
         empty($mobileErr) &&
-        empty($courseErr) &&
-        empty($batchErr) &&
+        empty($qualificationErr) &&
+        empty($subjectErr) &&
         empty($imageErr)
     ){
-        $sql = "INSERT INTO students 
-            (name, email, mobile, gender, dob, course, batch_name, address, profile_image, created_by) 
+        $sql = "INSERT INTO teachers 
+            ( fullname, email, mobile, gender, dob, qualification, subject, address, profile_image, created_by) 
             VALUES 
-            ('$name', '$email', '$mobile', '$gender', '$dob', '$course', '$batch_name', '$address', '$profile_image', '$user_id')";
+            ('$name', '$email', '$mobile', '$gender', '$dob', '$qualification', '$subject', '$address', '$profile_image', '$user_name')";
 
         
         $result = mysqli_query($conn, $sql);
 
         if($result){
-            header("Location: show_student.php");
+            header("Location: teachers.php");
                 exit();
                 
             } else {
@@ -147,7 +144,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Add Student</title>
+    <title>Add Teacher</title>
 
     <style>
         body {
@@ -209,10 +206,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             </li>
 
             <li>
-                <a href="teachers.php" class="nav-link active-menu">
-                    <i class="bi bi-person-plus me-2"></i> Teachers
+                <a href="teachers.php" class="nav-link">
+                    <i class="bi bi-person-plus me-2"></i>Teachers
                 </a>
             </li>
+
+           
 
             <li>
                 <a href="show_student.php" class="nav-link">
@@ -249,7 +248,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
             <div>
                 <i class="bi bi-list me-3"></i>
-                <strong>Add Student</strong>
+                <strong>Add Teacher</strong>
             </div>
 
             <div>
@@ -266,7 +265,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                 <div class="d-flex align-items-center mb-4">
                     <i class="bi bi-person-plus-fill text-primary fs-3 me-2"></i>
-                    <h3 class="fw-bold mb-0">Add Student</h3>
+                    <h3 class="fw-bold mb-0">Add Teacher</h3>
                 </div>
 
                 <form action="" method="POST" enctype="multipart/form-data">
@@ -327,9 +326,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                    <div class="row">
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Course</label>
-                            <select name="course" class="form-select" required>
-                                <option value="">-- Select Course --</option>
+                            <label class="form-label">Qualification</label>
+                            <select name="qualification" class="form-select" required>
+                                <option value="">-- Select Qualification --</option>
                                 <option value="BCA">BCA</option>
                                 <option value="MCA">MCA</option>
                                 <option value="B.Tech">B.Tech</option>
@@ -339,13 +338,13 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Batch Year</label>
-                            <select name="batch_name" class="form-select" required>
-                                <option value="">-- Select Year --</option>
-                                <option value="2023">2023</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
+                            <label class="form-label">Subject</label>
+                            <select name="subject" class="form-select" required>
+                                <option value="">-- Select Subject --</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Computer Science">Computer Science</option>
                             </select>
                         </div>
                     
@@ -364,7 +363,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 
                     <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-plus-circle me-2"></i>
-                        Add Student
+                        Add Teacher
                     </button>
 
                 </form>

@@ -14,12 +14,12 @@ if(!$user_id){
 
 $id = $_GET['id'];
 
-$sql = "UPDATE students 
+$sql = "UPDATE teachers 
         SET is_deleted = 1 
-        WHERE id = $id";
+        WHERE user_id = $id";
 
 if(mysqli_query($conn, $sql)){
-    header("Location: show_student.php");
+    header("Location: teachers.php");
     exit();
 }else{
     echo "Error : " . mysqli_error($conn);

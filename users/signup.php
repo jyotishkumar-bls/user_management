@@ -62,6 +62,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                         $error = "Admin Insert Error: " . mysqli_error($conn);
                     }
                 }
+                if($role == "Staff"){
+
+                    $teacher_sql = "INSERT INTO teachers (
+                                    user_id,
+                                    fullname,
+                                    email
+                                  ) VALUES (
+                                    '$user_id',
+                                    '$name',
+                                    '$email'
+                                  )";
+
+                    if(!mysqli_query($conn, $teacher_sql)){
+                        $error = "Teacher Insert Error: " . mysqli_error($conn);
+                    }
+                }
 
                 if(empty($error)){
                     header("Location: login.php?success=account_created");

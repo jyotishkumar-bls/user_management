@@ -96,14 +96,14 @@ $profile_image = !empty($row['profile_image'])
             </li>
 
             <li class="nav-item mb-2">
-                <a href="add_student.php" class="nav-link text-white">
-                    <i class="bi bi-person-plus mr-2"></i> Add Student
+                <a href="teachers.php" class="nav-link text-white">
+                    <i class="bi bi-person-plus mr-2"></i> Teachers
                 </a>
             </li>
 
             <li class="nav-item mb-2">
                 <a href="show_student.php" class="nav-link text-white">
-                    <i class="bi bi-table mr-2"></i> Show Students
+                    <i class="bi bi-person-plus mr-2"></i>  Students
                 </a>
             </li>
 
